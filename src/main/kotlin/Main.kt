@@ -1,32 +1,57 @@
+fun precedence(op: Char): Int {
+    return when (op) {
+        '+', '-' -> 1
+        '*', '/' -> 2
+        else -> 0
+    }
+}
+fun applyOperator(a: Double, b: Double, op: Char): Double {
+    return when (op) {
+        '+' -> a + b
+        '-' -> a - b
+        '*' -> a * b
+        '/' -> {
+            if (b == 0.0) throw IllegalArgumentException("Division by zero")
+            a / b
+        }
+        else -> throw IllegalArgumentException("Unknown operator")
+    }
+}
 fun main() {
     println("Enter the expression (e.g. 2+3 or 2 + 3):")
     val input = readln().replace(" ", "")
-    val operators = listOf("+", "-", "*", "/")
-    val operator = operators.firstOrNull() {it in input}
-    if (operator == null) {
-        println("Error: no operator found in expression")
-        return
-    }
-    val parts = input.split(operator)
-    if (parts.size != 2) {
-        println("Error: invalid expression")
-        return
-    }
-    val num1 = parts[0].toDouble()
-    val num2 = parts[1].toDouble()
-    if (operator == "/" && num2 == 0.0) {
-        println("Error: cannot divide by zero!")
-        return
-    }
-    val res = when (operator) {
-        "+" -> num1 + num2
-        "-" -> num1 - num2
-        "*" -> num1 * num2
-        "/" -> num1 / num2
-        else -> {
-            println("Error: unknown sign")
-            return
+    val values = mutableListOf<Double>()
+    val ops = mutableListOf<Char>()
+    var i = 0
+    while (i < input.length) {
+        val ch = input[i]
+        if (ch.isDigit() || ch == '.') {
+            val sb = StringBuilder()
+            while (i < input.length && (input[i].isDigit() || input[i] == '.')) {
+                sb.append(input[i])
+                i++
+            }
+            values.add(sb.toString().toDouble())
+            continue
         }
+        if (ch in listOf('+', '-', '*', '/')) {
+            while (ops.isNotEmpty() &&
+                precedence(ops.last()) >= precedence(ch)
+            ) {
+                val b = values.removeLast()
+                val a = values.removeLast()
+                val op = ops.removeLast()
+                values.add(applyOperator(a, b, op))
+            }
+            ops.add(ch)
+        }
+        i++
     }
-    println("Result: $res")
+    while (ops.isNotEmpty()) {
+        val b = values.removeLast()
+        val a = values.removeLast()
+        val op = ops.removeLast()
+        values.add(applyOperator(a, b, op))
+    }
+    println("Result: ${values.first()}")
 }
