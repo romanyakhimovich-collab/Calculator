@@ -34,10 +34,20 @@ fun main() {
             values.add(sb.toString().toDouble())
             continue
         }
-        if (ch in listOf('+', '-', '*', '/')) {
-            while (ops.isNotEmpty() &&
-                precedence(ops.last()) >= precedence(ch)
-            ) {
+        if (ch == '(') {
+            ops.add(ch)
+        }
+        else if (ch == ')') {
+            while (ops.isNotEmpty() && ops.last() != '(') {
+                val b = values.removeLast()
+                val a = values.removeLast()
+                val op = ops.removeLast()
+                values.add(applyOperator(a, b, op))
+            }
+            ops.removeLast()
+        }
+        else if (ch in listOf<Char>('+', '-', '*', '/')) {
+            while (ops.isNotEmpty() && ops.last() != '(' && precedence(ops.last()) >= precedence(ch)) {
                 val b = values.removeLast()
                 val a = values.removeLast()
                 val op = ops.removeLast()
